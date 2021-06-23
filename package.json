@@ -5,16 +5,28 @@
   "main": "index.js",
   "scripts": {
     "start": "node dist/server.js",
-    "dev": "ts-node server.ts"
+    "dev": "ts-node server.ts",
+    "nodemon": "nodemon"
   },
   "author": "Mitin Maks",
   "license": "ISC",
   "dependencies": {
-    "@types/express": "github:types/express",
+    "@types/bcryptjs": "^2.4.2",
+    "@types/dotenv": "^8.2.0",
+    "@types/express": "^4.17.12",
+    "@types/jsonwebtoken": "^8.5.2",
+    "@types/mongoose": "^5.11.97",
+    "@types/validator": "^13.1.4",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^10.0.0",
     "express": "^4.17.1",
-    "express-validator": "^6.12.0",
+    "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.12.14",
     "ts-node": "^10.0.0",
-    "typescript": "^4.3.4"
+    "typescript": "^4.3.4",
+    "validator": "^13.6.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
   }
 }

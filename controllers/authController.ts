@@ -1,15 +1,14 @@
 import {RequestHandler} from 'express'
 import jwt from 'jsonwebtoken'
-
 import User, { UserType } from '../models/userModel'
+import catchAsync from '../utils/catchAsync'
 
 const signToken = (userId:string) => {
-    console.log(process.env.JWT_EXPIRES_IN)
     return jwt.sign(userId, process.env.JWT_SECRET!)
 }
 
 class AuthController {
-    signup:RequestHandler = async (req, res, next) => {
+    signup:RequestHandler = catchAsync(async (req, res, next) => {
       const body: UserType = req.body;
 
       const user = await User.create({
@@ -29,9 +28,7 @@ class AuthController {
           user,
         },
       });
-    }
-
-    
+    })
 }
 
 export default AuthController

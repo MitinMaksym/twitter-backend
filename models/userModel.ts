@@ -7,13 +7,20 @@ export type UserType = {
     email:string,
     password: string,
     passwordConfirm:string,
-    confirmHash:string
+    confirmHash:string,
+    passwordChangedAt: Date,
+    passwordResetToken: string,
+    passwordResetExpires: Date,
+    active: boolean
 }
 
-export type UserModalDocumentType = UserType & Document
+export type UserModalDocumentType = UserType & Document & {
+    correctPassword: (candidatePassword: string, userPassword:string) => Promise<boolean>,
+    changePasswordAfter: (JWTTimestamp: number) => boolean
+}
 
 
-const userSchema = new Schema({
+const userSchema = new Schema<UserModalDocumentType>({
   username: {
     type: String,
     unique: true,
@@ -46,7 +53,36 @@ const userSchema = new Schema({
   confirmHash: {
     type: String,
   },
+  passwordChangedAt: Date,
+  passwordResetToken: String,
+  passwordResetExpires: Date,
+  active: {
+    type: Boolean,
+    default: true,
+    select: false
+  }
 });
+
+userSchema.methods.correctPassword = async function (
+    candidatePassword,
+    userPassword
+  ) {
+    return await bcrypt.compare(candidatePassword, userPassword);
+  };
+
+  userSchema.methods.changePasswordAfter = function (
+    JWTTimestamp:number
+  ) {
+
+    if (this.passwordChangedAt) {
+       
+        const changedTimestamp = this.passwordChangedAt.getTime() / 1000
+
+        return changedTimestamp < JWTTimestamp;  
+    }
+
+    return false
+  };
 
 userSchema.pre<UserModalDocumentType>('save',async function(next) {
      //Only run this function if password was actually modified

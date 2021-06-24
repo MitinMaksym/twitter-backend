@@ -59,17 +59,13 @@ const handleCastErrorDB = (err:AppError) => {
 const ErrorController:ErrorRequestHandler = (err:AppError, req, res, next) => {
     err.statusCode = err.statusCode || 500;
     err.status = err.status || 'error'
-
-
     if (process.env.NODE_ENV === 'development') {
         sendErrorDev(err, res);
       } else if (process.env.NODE_ENV === 'production') {
-        let error = { ...err };    
+        let error = { ...err, message: err.message };    
         if (error.name === 'CastError') error = handleCastErrorDB(error);
         if (error.code === 11000) error = handleDuplicateFieldsDB(error);
-        if (err.name === "ValidationError"){  
-            console.log(88)
-        
+        if (err.name === "ValidationError"){          
             error = handleValidationErrorDB(error);
         }
         if (error.name === 'JsonWebTokenError') error = handleJWTError();

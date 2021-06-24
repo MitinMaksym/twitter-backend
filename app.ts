@@ -10,7 +10,7 @@ app.use(express.json())
 
 
 //ROUTES
-app.use('/twitter-app/api/v1/users', userRoutes)
+app.use('/api/v1/users', userRoutes)
 
 app.use(ErrorController)
 

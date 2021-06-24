@@ -1,22 +1,25 @@
 import {Schema, Document, model} from 'mongoose'
 import validator from 'validator'
 import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
 
 export type UserType = {
     username:string,
     email:string,
     password: string,
     passwordConfirm:string,
-    confirmHash:string,
+    confirmToken:string,
     passwordChangedAt: Date,
     passwordResetToken: string,
     passwordResetExpires: Date,
-    active: boolean
+    active: boolean,
+    confirmed: boolean
 }
 
 export type UserModalDocumentType = UserType & Document & {
     correctPassword: (candidatePassword: string, userPassword:string) => Promise<boolean>,
     changePasswordAfter: (JWTTimestamp: number) => boolean
+    createConfirmToken: () => string
 }
 
 
@@ -50,7 +53,13 @@ const userSchema = new Schema<UserModalDocumentType>({
       message: "Passwords are not the same",
     },
   },
-  confirmHash: {
+  confirmed: {
+      type:Boolean,
+      default: false,
+      select: false
+
+  },
+  confirmToken: {
     type: String,
   },
   passwordChangedAt: Date,
@@ -83,6 +92,12 @@ userSchema.methods.correctPassword = async function (
 
     return false
   };
+  userSchema.methods.createConfirmToken = function() {
+    const token = crypto.randomBytes(32).toString('hex');
+    this.confirmToken = crypto.createHash("sha256").update(token).digest("hex")
+  
+    return token
+  }
 
 userSchema.pre<UserModalDocumentType>('save',async function(next) {
      //Only run this function if password was actually modified

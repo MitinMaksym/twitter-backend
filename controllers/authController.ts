@@ -1,9 +1,11 @@
 import {RequestHandler, Request, Response} from 'express'
 import jwt from 'jsonwebtoken'
+import crypto from 'crypto'
 const { promisify } = require('util');
 import User, { UserModalDocumentType, UserType } from '../models/userModel'
 import AppError from '../utils/AppError'
 import catchAsync from '../utils/catchAsync'
+import sendEmail from '../core/mailer'
 
 const signToken = (userId:string) => {
     return jwt.sign({id:userId}, process.env.JWT_SECRET!,{expiresIn:process.env.JWT_EXPIRES_IN ?? '90d' })
@@ -35,9 +37,29 @@ class AuthController {
       username: body.username,
       email: body.email,
       password: body.password,
-      passwordConfirm: body.passwordConfirm,
+      passwordConfirm: body.passwordConfirm
     });
-    createSendToken(user, 201, res);
+
+    const confirmToken = user.createConfirmToken()
+    await user.save({ validateBeforeSave: false });
+    const confirmURL = `${req.protocol}://${req.hostname}/api/v1/users/verify/${confirmToken}`;
+    const message = `To confirm your Twitter account please follow ${confirmURL}.`;
+    try {
+        await sendEmail({
+          email: user.email,
+          subject: 'Confirmation token',
+          message
+        });
+    
+        res.status(200).json({
+          status: 'success',
+          message: 'Confirmation letter was sent to email'
+        });
+      } catch (err) {
+        return next(
+          new AppError('There was an error sending the email. Try again later!',500)
+        );
+      }
   });
 
   login: RequestHandler = catchAsync(async (req, res, next) => {
@@ -49,12 +71,35 @@ class AuthController {
 
     const user = await User.findOne({
       $or: [{ username: body.username }, { email: body.email }],
-    }).select("+password");
+    }).select("+password").select("+confirmed")
     if (!user || !(await user.correctPassword(body.password, user.password))) {
       return next(new AppError("Login or password is incorrect", 401));
     }
+    if (!user.confirmed) {
+        return next(new AppError("You account in not confirmed", 401))
+    }
     createSendToken(user, 200, res);
   });
+
+  verify: RequestHandler = catchAsync(async (req, res, next)=> { 
+    const confirmToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+    const user = await User.findOne({
+        confirmToken
+      });
+
+    if (!user) {
+        return next(new AppError('Token is invalid', 400))
+    }
+    // @ts-ignore
+  user.confirmToken= undefined;
+  user.confirmed=true
+  await user.save({ validateBeforeSave: false });
+      createSendToken(user,200,res)
+  })
 
   protect = catchAsync(
     async (req: CustomRequestType, _, next) => {
@@ -86,7 +131,6 @@ class AuthController {
       }
 
       if (currentUser.changePasswordAfter(decoded.iat)) {
-          console.log('use')
         return next(
           new AppError(
             "User has changed a password recently! Please log in again",

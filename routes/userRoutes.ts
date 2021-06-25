@@ -7,6 +7,7 @@ const userController = new UserController()
 
 const router = express.Router()
 
+router.get('/me', authController.protect, userController.me)
 router.post('/signup', authController.signup)
 router.post('/login', authController.login)
 router.post('/verify/:token', authController.verify)

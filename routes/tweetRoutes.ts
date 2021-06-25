@@ -15,6 +15,7 @@ router
 
   router
   .route("/:id")
+  .get(authController.protect, tweetController.getTweet)
   .patch(authController.protect, tweetController.updateTweetById)
   .delete(authController.protect,tweetController.deleteTweetById);
 

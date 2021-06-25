@@ -71,6 +71,8 @@ const userSchema = new Schema<UserType>({
     default: true,
     select: false
   }
+},{
+  timestamps: true
 });
 
 userSchema.methods.correctPassword = async function (

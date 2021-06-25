@@ -1,5 +1,4 @@
 import mongoose, { Schema,Document } from 'mongoose'
-import { UserType} from './userModel'
 
 export type TweetType = {
     text:string,
@@ -19,6 +18,8 @@ const tweetSchema = new mongoose.Schema<TweetType>({
         ref: 'User',
         required: [true, 'User is required']
     }
+},{
+    timestamps: true
 })
 
 const tweetModal = mongoose.model<TweetModalDocumentType>('Tweet', tweetSchema)

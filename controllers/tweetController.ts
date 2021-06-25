@@ -16,6 +16,18 @@ class TweetController {
             }
         })
     })
+    getTweet:RequestHandler = catchAsync(async (req, res, next) => {
+        const tweet = await Tweet.findById(req.params.id)
+        if (!tweet) {
+            return next(new AppError('Tweet is not found', 404))
+        }
+        res.status(200).json({
+            status: 'success',
+            data: {
+                tweet
+            }
+        })
+    })
     createTweet:RequestHandler = catchAsync(async (req:CustomRequestType, res) => {
         const user = req.user
         const tweet = await Tweet.create({text: req.body.text,user:user?.id})
@@ -33,7 +45,7 @@ class TweetController {
         })
 
         if (!tweet) {
-            return next(new AppError('Tweet with such an id is not found', 404))
+            return next(new AppError('Tweet is not found', 404))
         }
 
         if (String(tweet?.user) !== req.user?.id){
@@ -51,7 +63,7 @@ class TweetController {
         
         const tweet = await Tweet.findById(req.params.id)
         if (!tweet) {
-            return next(new AppError('Tour with such an id is not found', 404))
+            return next(new AppError('Tour is not found', 404))
         }
         if (String(tweet?.user) !== req.user?.id){
             return next(new AppError('User is allowed to delete only own tweets', 403))

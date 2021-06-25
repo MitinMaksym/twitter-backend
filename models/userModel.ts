@@ -4,17 +4,18 @@ import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 
 export type UserType = {
-    username:string,
-    email:string,
-    password: string,
-    passwordConfirm:string,
-    confirmToken:string,
-    passwordChangedAt: Date,
-    passwordResetToken: string,
-    passwordResetExpires: Date,
-    active: boolean,
-    confirmed: boolean
-}
+  id: string;
+  username: string;
+  email: string;
+  password: string;
+  passwordConfirm: string;
+  confirmToken: string;
+  passwordChangedAt: Date;
+  passwordResetToken: string;
+  passwordResetExpires: Date;
+  active: boolean;
+  confirmed: boolean;
+};
 
 export type UserModalDocumentType = UserType & Document & {
     correctPassword: (candidatePassword: string, userPassword:string) => Promise<boolean>,
@@ -23,7 +24,7 @@ export type UserModalDocumentType = UserType & Document & {
 }
 
 
-const userSchema = new Schema<UserModalDocumentType>({
+const userSchema = new Schema<UserType>({
   username: {
     type: String,
     unique: true,

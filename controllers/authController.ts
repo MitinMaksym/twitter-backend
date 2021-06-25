@@ -25,9 +25,7 @@ const createSendToken = (user: UserModalDocumentType, statusCode:number, res:Res
     })
 }
 
-/* TODO
-    1) confim accoun functionality */
-export type CustomRequestType = Request & {user?:UserModalDocumentType}
+export type CustomRequestType = Request & {user?:UserType}
 
 class AuthController {
   signup: RequestHandler = catchAsync(async (req, res, next) => {
@@ -42,7 +40,7 @@ class AuthController {
 
     const confirmToken = user.createConfirmToken()
     await user.save({ validateBeforeSave: false });
-    const confirmURL = `${req.protocol}://${req.hostname}/api/v1/users/verify/${confirmToken}`;
+    const confirmURL = `${req.protocol}://${req.get("host")}/api/v1/users/verify/${confirmToken}`;
     const message = `To confirm your Twitter account please follow ${confirmURL}.`;
     try {
         await sendEmail({
@@ -98,7 +96,10 @@ class AuthController {
   user.confirmToken= undefined;
   user.confirmed=true
   await user.save({ validateBeforeSave: false });
-      createSendToken(user,200,res)
+     res.status(200).json({
+         status:'success',
+         message: "Account was confirmed successfully!"
+     })
   })
 
   protect = catchAsync(

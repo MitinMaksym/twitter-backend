@@ -1,5 +1,4 @@
-
-{"watch":[""],
-"ext":"ts",
-"exec": "ts-node server.ts"
+{
+  "ext": "*.ts",
+  "exec": "ts-node server.ts"
 }

@@ -10,6 +10,8 @@ const router = express.Router()
 router.get('/me', authController.protect, userController.me)
 router.post('/signup', authController.signup)
 router.post('/login', authController.login)
+router.post('/logout', authController.logout)
+router.post('/refreshToken', authController.refresh)
 router.post('/verify/:token', authController.verify)
 
 router.get('/', authController.protect, userController.getUsers)
